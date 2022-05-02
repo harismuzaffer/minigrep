@@ -1,23 +1,17 @@
-use std::{env, fs};
+use std::{env, fs, process};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
-    let result = Config::new(&args);
 
-    match result {
-        Ok(c) => {
-            println!("we have made it {}", c.query);
-        },
-        Err(message) => {
-            println!("sorry found an error {}", message);
-        }
-    }
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("problem parsing the arguments: {}", err);
+        process::exit(1);
+    });
 
-    // println!("Searching for {} in file {}", config.query, config.filename);
+    println!("Searching for {} in file {}", config.query, config.filename);
 
-    // let contents = fs::read_to_string(config.filename).expect("ohhh");
-    // println!("contents are {}", contents);
+    let contents = fs::read_to_string(config.filename).expect("ohhh");
+    println!("contents are {}", contents);
 }
 
 #[derive(Debug)]
