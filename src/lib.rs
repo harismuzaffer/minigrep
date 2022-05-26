@@ -52,14 +52,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn one_result() {
+    fn case_sensitive() {
         let query = "rom";
         let contents = "\
-writing in Rust:
+writing in Rust Rom:
 working from home
 and enjoying the coffee.
 ";
 
         assert_eq!(vec!["working from home"], search(query, contents));
+    }
+
+    #[test]
+    fn case_insensitive() {
+        let query = "rom";
+        let contents = "\
+writing in Rust Rom:
+working from home
+and enjoying the coffee.
+";
+
+        assert_eq!(vec!["writing in Rust Rom:", "working from home"], search_case_insensitive(query, contents));
     }
 }
