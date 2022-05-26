@@ -1,10 +1,11 @@
-use std::fs;
+use std::{fs, env};
 use std::error::Error;
 
 #[derive(Debug)]
 pub struct Config<'a> {
     pub query: &'a String,
-    pub filename: &'a String
+    pub filename: &'a String,
+    pub case_sensitive: bool,
 }
 
 impl<'a> Config<'a> {
@@ -15,9 +16,12 @@ impl<'a> Config<'a> {
         let query = &args[1];
         let filename = &args[2];
 
+        let case_sensitive = env::var("CASE_SENSITIVE").is_err();
+
         let c  = Config {
             query,
-            filename
+            filename,
+            case_sensitive,
         };
 
         Ok(c)
@@ -27,7 +31,13 @@ impl<'a> Config<'a> {
 pub fn run(config: Config) -> Result<(), Box<dyn Error>>{
     let contents = fs::read_to_string(config.filename)?;
 
-    for l in search(&config.query, &contents) {
+    let results = if config.case_sensitive {
+        search(&config.query, &contents)
+    } else {
+        search_case_insensitive(&config.query, &contents)
+    };
+
+    for l in results {
         println!("{}", l);
     }
 
@@ -46,6 +56,17 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     v
 }
 
+pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let mut v = Vec::new();
+
+    for line in contents.lines() {
+        if line.to_lowercase().contains(&query.to_lowercase()) {
+            v.push(line);
+        }
+    }
+
+    v
+}
 
 #[cfg(test)]
 mod tests {
